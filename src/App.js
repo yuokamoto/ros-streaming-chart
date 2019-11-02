@@ -31,14 +31,17 @@ class App extends Component {
     super(props);
     
     this.state = {
+     ros: null, 
      rosbridgeUrl: 'ws://localhost:9090',
-     topics: {},
-     topicList:{'topics':[], 'types':[]},
-     msgList:{},
+     // topics: {},
+     // topicList:{'topics':[], 'types':[]},
+     // msgList:{},
      selectedTopic: null,
      selectOptions: [],
     };
-
+    this.topics = {}
+    this.topicList = {'topics':[], 'types':[]}
+    this.msgList = {}
     this.chartReference = null;
     this.color_index = 0
 
@@ -96,26 +99,24 @@ class App extends Component {
       }, this)
 
       topics.types.forEach(function(msg_name){
-        if(! (msg_name in this.state.msgList) ){
+        if(! (msg_name in this.msgList) ){
           this.getMsgInfo(msg_name)
         }
       }, this)
 
-      //update topic and render
-      this.setState({
-        topicList: topics
-      })
+      this.topicList = topics
+      
     })
   }
 
   getTopicType(topic_name){
-    var index = this.state.topicList.topics.indexOf(topic_name)
+    var index = this.topicList.topics.indexOf(topic_name)
     if(index < 0 ){
       console.warn('topic is not in the topic list')
       this.updateTopicList()
       return 
     }
-    return this.state.topicList.types[index]
+    return this.topicList.types[index]
   }
 
   getMsgInfo(msg_name){
@@ -134,7 +135,7 @@ class App extends Component {
       console.log("Getting msginfo.: ", msg_name);
       result.typedefs.forEach((data)=>{
         console.log(data.type, data)
-        this.state.msgList[data.type] = data  
+        this.msgList[data.type] = data  
       },this)
     });
     
@@ -148,11 +149,11 @@ class App extends Component {
   addSelectedTopic(){
     const topic_name = this.state.selectedTopic.label
     const topic_type = this.getTopicType(topic_name)
-    console.log('addSelectedTopic', topic_name, this.state.msgList[this.getTopicType(topic_name)])
+    console.log('addSelectedTopic', topic_name, this.msgList[this.getTopicType(topic_name)])
 
     this.lines = []
     this.addLines(topic_name, topic_type)
-    this.state.topics[topic_name] = {
+    this.topics[topic_name] = {
       'topic': new ROSLIB.Topic({
           ros : this.state.ros,
           name : topic_name,
@@ -160,10 +161,10 @@ class App extends Component {
         }),
       'lines':this.lines
     }
-    this.state.topics[topic_name].topic.subscribe(message => {
+    this.topics[topic_name].topic.subscribe(message => {
         // console.log('Received message on : ', message);
         var time = message.header.stamp.secs + message.header.stamp.nsecs / 1e9
-        var lines = this.state.topics[topic_name].lines
+        var lines = this.topics[topic_name].lines
         for(var i in lines){
           //parse data
           const fieldname = lines[i].name.substr(topic_name.length+1,lines[i].name.length) //remove topic_name
@@ -203,7 +204,7 @@ class App extends Component {
 
   }
   addLines(topic_name, topic_type){
-    const msg = this.state.msgList[topic_type]
+    const msg = this.msgList[topic_type]
     console.log('add Topic', topic_name, topic_type, msg)
     for(var i in msg.fieldtypes){
       var field_type = msg.fieldtypes[i]
@@ -225,7 +226,7 @@ class App extends Component {
             array : msg.fieldarraylen[i]
           })
 
-        }else if(this.state.msgList[field_type]){ 
+        }else if(this.msgList[field_type]){ 
           this.addLines(field_name, field_type)
         }else{
           console.log('not in the msgList', field_type)
@@ -250,9 +251,7 @@ class App extends Component {
     })
     this.chartReference.chartInstance.update()
     this.color_index++
-
-    console.log(this.color_index, CHART_COLORS[CHART_COLORS.length%this.color_index])
-    // this.state.topics[topic_name] = {
+    // this.topics[topic_name] = {
     //   'topic': new ROSLIB.Topic({
     //       ros : this.state.ros,
     //       name : topic_name,
@@ -262,13 +261,13 @@ class App extends Component {
     //   };
     // this.getMsgInfo(this.getTopicType(topic_name))
     
-    // this.state.topics[topic_name].topic.subscribe(message => {
+    // this.topics[topic_name].topic.subscribe(message => {
     //   this.getMsgInfo(this.getTopicType(topic_name))
     
-    //     if(this.state.topics[topic_name].type==undefined){
+    //     if(this.topics[topic_name].type==undefined){
     //       console.warn(topic_name+' type is not defined')
-    //       if(this.state.msgList[this.getTopicType(topic_name)]){
-    //         this.state.topics[topic_name].type = this.state.msgList[this.getTopicType(topic_name)]
+    //       if(this.msgList[this.getTopicType(topic_name)]){
+    //         this.topics[topic_name].type = this.msgList[this.getTopicType(topic_name)]
     //       }else{
     //         this.getMsgInfo(this.getTopicType(topic_name))            
     //       }
@@ -282,7 +281,7 @@ class App extends Component {
     //     //     });
     //     //   }
     //     // }, this);
-    //     // console.log(this.state.topicList)
+    //     // console.log(this.topicList)
     //     }
     // });
   }
