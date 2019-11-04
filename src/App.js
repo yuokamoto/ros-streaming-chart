@@ -391,77 +391,38 @@ class App extends Component {
       }
     };
 
-    return ( <
-      div >
+    return ( 
+      <div>
+        <div>
+          <label> rosbridgeURL: </label> 
+          <input type = "text" value = { this.state.rosbridgeUrl }
+            onChange = { this.rosbridgeUrlChange.bind(this) } /> 
+          <button onClick = { this.updateRosConnection.bind(this)}> 
+            { this.state.ros.isConnected ? 'Disconnect' : 'Connect'} 
+          </button> 
+          <button onClick = { this.updateTopicList.bind(this)} >
+            update topic list 
+          </button> 
+        </div>
 
-      <
-      div >
-      <
-      label > rosbridgeURL: < /label> <
-      input type = "text"
-      value = {
-        this.state.rosbridgeUrl
-      }
-      onChange = {
-        this.rosbridgeUrlChange.bind(this)
-      }
-      /> <
-      button onClick = {
-        this.updateRosConnection.bind(this)
-      } > {
-        this.state.ros.isConnected ? 'Disconnect' : 'Connect'
-      } <
-      /button> <
-      button onClick = {
-        this.updateTopicList.bind(this)
-      } >
-      update topic list <
-      /button> < /
-      div >
+        <div>
+          <Select value = { this.state.selectedTopic }
+            onChange = { this.topicSelect.bind(this) }
+            options = { this.state.selectOptions }
+          /> 
+          <button onClick = { this.addSelectedTopic.bind(this) } > add </button> 
+          <Select value = { this.state.selectedLine }
+            onChange = { this.lineSelect.bind(this) }
+            options = { this.chartReference ? this.chartReference.chartInstance.data.datasets : []}
+          /> 
+          <button onClick = { this.removeSelectedLine.bind(this) }> remove </button> 
+        </div>
 
-      <
-      div >
-      <
-      Select value = {
-        this.state.selectedTopic
-      }
-      onChange = {
-        this.topicSelect.bind(this)
-      }
-      options = {
-        this.state.selectOptions
-      }
-      /> <
-      button onClick = {
-        this.addSelectedTopic.bind(this)
-      } > add < /button> <
-      Select value = {
-        this.state.selectedLine
-      }
-      onChange = {
-        this.lineSelect.bind(this)
-      }
-      options = {
-        this.chartReference ? this.chartReference.chartInstance.data.datasets : []
-      }
-      /> <
-      button onClick = {
-        this.removeSelectedLine.bind(this)
-      } > remove < /button> < /
-      div >
-
-      <
-      Line ref = {
-        (reference) => this.chartReference = reference
-      }
-      data = {
-        this.chartReference ? this.chartReference.chartInstance.data : data
-      }
-      options = {
-        this.chartReference ? this.chartReference.chartInstance.options : options
-      }
-      /> < /
-      div >
+        <Line ref = { (reference) => this.chartReference = reference }
+          data = { this.chartReference ? this.chartReference.chartInstance.data : data }
+          options = { this.chartReference ? this.chartReference.chartInstance.options : options }
+        />
+      </div>
     );
   }
 }
