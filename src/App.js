@@ -207,7 +207,7 @@ class App extends Component {
 
         //array data
         if (lines[i].array > -1 && data.length > 0) { //todo dynamic change of data length
-          for (var j; j < data.length; j++) {
+          for (j; j < data.length; j++) {
             const line_name = lines[i].name + '/' + j.toString()
             const line_type = lines[i].type
             this.addLine2Chart(line_name, line_type)
@@ -220,7 +220,7 @@ class App extends Component {
           lines.splice(i, 1) //limove lines of source array
         } else {
           this.chartReference.chartInstance.data.datasets.forEach(function(dataset) {
-            if (dataset['label'] == lines[i].name) {
+            if (dataset['label'] === lines[i].name) {
               dataset.data.push({
                 t: Date.now(), //message.header.stamp.secs// + message.header.stamp.nsecs*10e9,//
                 y: data
@@ -243,11 +243,11 @@ class App extends Component {
     for (var i in msg.fieldtypes) {
       var field_type = msg.fieldtypes[i]
       const field_name = topic_name + '/' + msg.fieldnames[i]
-      if (msg.fieldnames[i] != 'header') {
+      if (msg.fieldnames[i] !== 'header') {
 
         if (PLOTTABLE_MSGS.includes(field_type)) {
           //single msg
-          if (msg.fieldarraylen[i] == -1) {
+          if (msg.fieldarraylen[i] === -1) {
             this.addLine2Chart(field_name, field_type)
           } else {
             //array msg
@@ -297,14 +297,14 @@ class App extends Component {
     var datasets = this.chartReference.chartInstance.data.datasets
     for (var i = 0; i < datasets.length; i++) {
       // console.log(datasets[i]['label'], this.state.selectedLine.label)
-      if (datasets[i]['label'] == this.state.selectedLine.label) {
+      if (datasets[i]['label'] === this.state.selectedLine.label) {
         datasets.splice(i, 1)
         break
       }
     }
     var labels = this.chartReference.chartInstance.data.labels
-    for (var i in labels) {
-      if (labels[i] == this.state.selectedLine.label) {
+    for (i in labels) {
+      if (labels[i] === this.state.selectedLine.label) {
         labels.splice(i, 1)
       }
     }
@@ -312,8 +312,8 @@ class App extends Component {
     //remove from lines in topic
     for (var topic_name in this.topics) {
       // console.log(topic_name, this.topics)    
-      for (var i = 0; i < this.topics[topic_name].lines.length; i++) {
-        if (this.topics[topic_name].lines[i].name = this.state.selectedLine.label) {
+      for (i = 0; i < this.topics[topic_name].lines.length; i++) {
+        if (this.topics[topic_name].lines[i].name === this.state.selectedLine.label) {
           this.topics[topic_name].lines.splice(i, 1)
           break
         }
