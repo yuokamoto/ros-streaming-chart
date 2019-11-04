@@ -405,17 +405,25 @@ class App extends Component {
           </button> 
         </div>
 
-        <div>
+        <div className='lineEdit'>
           <Select value = { this.state.selectedTopic }
             onChange = { this.topicSelect.bind(this) }
             options = { this.state.selectOptions }
+            className='lineEditSelect'
           /> 
-          <button onClick = { this.addSelectedTopic.bind(this) } > add </button> 
+          <button className='lineEditBtn' onClick = { this.addSelectedTopic.bind(this) } >
+            add 
+          </button> 
+          <br/>
           <Select value = { this.state.selectedLine }
             onChange = { this.lineSelect.bind(this) }
             options = { this.chartReference ? this.chartReference.chartInstance.data.datasets : []}
+            className='lineEditSelect'
           /> 
-          <button onClick = { this.removeSelectedLine.bind(this) }> remove </button> 
+          <button className='lineEditBtn' onClick = { this.removeSelectedLine.bind(this) }> 
+            remove 
+          </button> 
+          <br/>
         </div>
 
         <Line ref = { (reference) => this.chartReference = reference }
