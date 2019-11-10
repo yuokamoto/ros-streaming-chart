@@ -2,6 +2,14 @@ import React, {
   Component
 } from 'react';
 import Select from 'react-select';
+import Popup from "reactjs-popup";
+// import Modal from 'react-modal';
+import CheckboxTree from 'react-checkbox-tree';
+import 'font-awesome/css/font-awesome.min.css'; 
+import 'react-checkbox-tree/lib/react-checkbox-tree.css';
+// import 'react-checkbox-tree/src/less/react-checkbox-tree.less';
+// import 'react-checkbox-tree/src/scss/react-checkbox-tree.scss';
+
 import {
   Line
 } from 'react-chartjs-2';
@@ -29,25 +37,124 @@ var CHART_COLORS = [
 // const IGNORE_MSGS = [
 //   'bool',
 //  ]
+class PopupContents extends React.Component {
+  constructor(props) {
+    // console.warn('constructor')
+    super(props);
 
+    this.state = {
+            checked: [],
+            expanded: [],
+            nodes: []
+        };
+
+    const topics = this.props.topics.topics
+    const types = this.props.topics.types
+    for(var i in topics){
+      // console.log(i, topics[i], types[i])
+      this.addTopic(topics[i], types[i])
+    }
+    console.log('popup constructor', this.props.topics, this.state.nodes)
+  }
+  addTopic(topic_name, topic_type) {
+    const children = this.addExpandTopics(topic_name, topic_type)
+    if(children.length>0){
+        this.state.nodes.push({
+            value: topic_name,
+            label: topic_name,
+            type: topic_type,
+            children: children
+        })
+    }
+  }
+  addExpandTopics(topic_name, topic_type) {
+    const msg = this.props.msgs[topic_type]
+    console.log('expand Topic', topic_name, topic_type, msg)
+    var children = []
+    for (var i in msg.fieldtypes) {
+      var field_type = msg.fieldtypes[i]
+      const field_name = topic_name + '/' + msg.fieldnames[i]
+      if (msg.fieldnames[i] !== 'header') {
+        if (PLOTTABLE_MSGS.includes(field_type)) {
+          //single msg
+          if (msg.fieldarraylen[i] === -1) {
+            // this.addLine2Chart(field_name, field_type)
+            // this.state.nodes.children.push()
+          } else {
+            //array msg
+            //not add line now since size is unknown until receive first msg.
+            field_type += 'MultiArray'
+          }
+          console.log('reach leaf************')
+          children.push({
+            value: field_name,
+            label: msg.fieldnames[i],
+            type: field_type,
+            array: msg.fieldarraylen[i]
+          })
+        } else if (this.props.msgs[field_type]) {
+          console.log('go one more inside************')
+          const result = this.addExpandTopics(field_name, field_type)
+          if(result.length>0){
+            children.push({
+              value: field_name,
+              label: msg.fieldnames[i],
+              type: field_type,
+              array: msg.fieldarraylen[i],
+              children: result
+            })
+          }
+        } else {
+          console.log('not in the msgList', field_type)
+        }
+      }
+    }
+
+    return children
+  }
+  onClick(){
+    console.log('test', this.props, this.props)
+  }
+  onExpand(expanded){
+    this.setState({ expanded })
+    console.log('testeee', this.state, expanded)
+  }
+  render() {
+    return (
+      <div className='popup'>
+　      <button onClick={this.onClick.bind(this)}>add</button>
+        <CheckboxTree
+                nodes={this.state.nodes}
+                expandIconClass="fa fa-chevron-right"
+                collapseIconClass="fa fa-chevron-down"
+                nativeCheckboxes={true}
+                showNodeIcon={false}
+                checked={this.state.checked}
+                expanded={this.state.expanded}
+                onCheck={checked => this.setState({ checked })}
+                onExpand={expanded => this.onExpand(expanded)}
+            />
+      </div>
+    );
+  }
+}
 class App extends Component {
   constructor(props) {
-    console.warn('constructor')
+    // console.warn('constructor')
     super(props);
 
     this.state = {
       ros: null,
       rosbridgeUrl: 'ws://localhost:9090',
-      // topics: {},
-      // topicList:{'topics':[], 'types':[]},
-      // msgList:{},
 
       //state for add line
       selectedTopic: null,
       selectOptions: [],
 
       //state for remove line
-      selectedLine: null
+      selectedLine: null,
+
+      modalIsOpen: false
 
     };
     this.topics = {}
@@ -83,7 +190,6 @@ class App extends Component {
     });
 
     setInterval(() => {
-        // console.log(this.state.ros.isConnected)
         //todo 
         // add change image
         // this.addLine('test', 'test')
@@ -157,7 +263,6 @@ class App extends Component {
         this.msgList[data.type] = data
       }, this)
     });
-
   }
 
   topicSelect(selected_option) {
@@ -330,6 +435,16 @@ class App extends Component {
     });
   }
 
+  // openModal() {
+  //   this.setState({modalIsOpen: true});
+  // }
+  // afterOpenModal() {
+  //   this.subtitle.style.color = '#f00';
+  // }
+  // closeModal() {
+  //   this.setState({modalIsOpen: false});
+  // }
+
   render() {
     // const onRefresh = (chart) => {this.refresh(chart)};
     const data = {
@@ -390,7 +505,13 @@ class App extends Component {
         }
       }
     };
-
+    
+    const customStyles = {
+      width: '90%',
+      height: '90%',
+      overflow: 'scroll',
+    };
+  
     return ( 
       <div>
         <div>
@@ -430,6 +551,29 @@ class App extends Component {
           data = { this.chartReference ? this.chartReference.chartInstance.data : data }
           options = { this.chartReference ? this.chartReference.chartInstance.options : options }
         />
+
+        <Popup trigger={<button>edit</button>} 
+                position="right center"
+                modal
+                contentStyle={customStyles}
+                closeOnDocumentClick
+                >
+          <PopupContents topics={this.topicList} msgs={this.msgList} />
+        </Popup>
+
+        {/*
+        <button onClick={this.openModal}>Open Modal!!</button>
+        <Modal
+          // isOpen={this.state.modalIsOpen}
+          // onAfterOpen={this.afterOpenModal}
+          // onRequestClose={this.closeModal}
+          style={customStyles}
+          contentLabel="Example Modal"
+        >
+          <PopupContents topics={this.topicList} msgs={this.msgList} />
+        </Modal>
+        */}
+
       </div>
     );
   }
