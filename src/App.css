@@ -42,9 +42,11 @@
   /*width: 100px;*/
   /*overflow:'scroll';*/
 }
-.react-checkbox-tree ol {
-  overflow: scroll;
-}
+
 /*.popup-content {
   width: 300px;
 }*/
+
+.react-checkbox-tree {
+  overflow: scroll;
+}

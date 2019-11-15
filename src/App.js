@@ -39,37 +39,51 @@ var CHART_COLORS = [
 //  ]
 class PopupContents extends React.Component {
   constructor(props) {
-    // console.warn('constructor')
     super(props);
-
     this.state = {
-            checked: [],
+            checked: this.props.selectedLines,
             expanded: [],
-            nodes: []
+            nodes: [],
+            arrayIndex: 0,
+            arrayIndexInputOpen: false
         };
+    this.selectedNode = null
+    this.copyNodes = []
+    this.addTopics()
+    // console.log('popup constructor', this.props.topics, this.state.nodes)
+  }
 
+  addTopics() {
     const topics = this.props.topics.topics
     const types = this.props.topics.types
+    this.state.nodes = this.props.lineCandidates
     for(var i in topics){
-      // console.log(i, topics[i], types[i])
-      this.addTopic(topics[i], types[i])
+      var exist = false
+      for(var j in this.state.nodes){
+        if(this.state.nodes[j].label === topics[i]){
+          exist = true
+        }
+      }
+      if(exist){
+        continue
+      }else{ 
+        // add only new topics
+        console.log('newly added topic: ' +  topics[i])
+        const children = this.addExpandTopics(topics[i], types[i])
+        if(children.length>0){
+            this.state.nodes.push({
+                value: topics[i],
+                label: topics[i],
+                type: types[i],
+                children: children
+            })
+        }
+      }
     }
-    console.log('popup constructor', this.props.topics, this.state.nodes)
   }
-  addTopic(topic_name, topic_type) {
-    const children = this.addExpandTopics(topic_name, topic_type)
-    if(children.length>0){
-        this.state.nodes.push({
-            value: topic_name,
-            label: topic_name,
-            type: topic_type,
-            children: children
-        })
-    }
-  }
-  addExpandTopics(topic_name, topic_type) {
+  addExpandTopics(topic_name, topic_type, showCheckbox = true) {
     const msg = this.props.msgs[topic_type]
-    console.log('expand Topic', topic_name, topic_type, msg)
+    // console.log('expand Topic', topic_name, topic_type, msg)
     var children = []
     for (var i in msg.fieldtypes) {
       var field_type = msg.fieldtypes[i]
@@ -84,24 +98,31 @@ class PopupContents extends React.Component {
             //array msg
             //not add line now since size is unknown until receive first msg.
             field_type += 'MultiArray'
+            showCheckbox = false
           }
-          console.log('reach leaf************')
+          // console.log('reach leaf************')
           children.push({
             value: field_name,
             label: msg.fieldnames[i],
             type: field_type,
-            array: msg.fieldarraylen[i]
+            array: msg.fieldarraylen[i],
+            showCheckbox: showCheckbox
           })
         } else if (this.props.msgs[field_type]) {
-          console.log('go one more inside************')
-          const result = this.addExpandTopics(field_name, field_type)
+          if (msg.fieldarraylen[i] === -1) {
+          } else {
+            showCheckbox = false
+          }
+          // console.log('go one more inside************')
+          const result = this.addExpandTopics(field_name, field_type, showCheckbox)
           if(result.length>0){
             children.push({
               value: field_name,
               label: msg.fieldnames[i],
               type: field_type,
               array: msg.fieldarraylen[i],
-              children: result
+              children: result, 
+              showCheckbox: showCheckbox
             })
           }
         } else {
@@ -112,17 +133,152 @@ class PopupContents extends React.Component {
 
     return children
   }
-  onClick(){
-    console.log('test', this.props, this.props)
+  onAdd(){
+    console.log('add', this.state.checked, this.state.expanded, this.state.nodes)
+    this.props.addSelectedLines(this.state.checked, this.state.nodes)
   }
-  onExpand(expanded){
-    this.setState({ expanded })
-    console.log('testeee', this.state, expanded)
+  getNode(value, source){
+    // console.log('getnode', source, value) 
+    for(var i in source){
+      // console.log('  ', i, source[i].value, value)
+      var res = null
+      if(source[i].value===value){
+        res = source[i]
+      }else if(source[i]['children']){
+        res = this.getNode(value, source[i].children)
+      }
+      if(res){
+        return res
+      }
+    }
+  }
+  onClick(targetNode){
+
+    // if(targetNode.checkState===0){
+    //   this.state.checked.push(targetNode.value)
+    //   console.log('first', targetNode)
+    // }else{
+    //   for(var i in this.state.checked){
+    //     if(this.state.checked[i]===targetNode.value){
+    //       this.state.checked.splice(i,1)  
+    //       console.log('seconnnnnnn')      
+    //     }
+    //     console.log('secon', targetNode)
+    //   }
+    // }
+    // this.onCheck(this.state.checked, targetNode)
+    
+    var node = this.getNode(targetNode.value, this.state.nodes)  
+    if(node.array>=0){
+      this.selectedNode = node
+      this.state.arrayIndex = 0
+      this.setState({arrayIndexInputOpen: true });
+      // console.log(node)
+    }
+  }
+  onCheck(checked, targetNode){
+    this.setState({checked})
+    // console.log('check', targetNode, this.state.nodes)
+    // if(targetNode.checkState===0){
+    //   var node = this.getNode(targetNode.value, this.state.nodes)
+    //   if(node.array>=0){
+    //     this.selectedNode = node
+    //     this.state.arrayIndex = 0
+    //     this.setState({arrayIndexInputOpen: true });
+    //     // console.log(node)
+    //   }else{
+    //     this.setState({checked})
+    //   }
+    // }else{
+    //   this.setState({checked})
+    // }
+  }
+  checkNodes(source){
+    // console.log('checknodes', this.state.checked, source)
+    for(var i in source){
+      // console.log(i, source[i])
+      this.state.checked.push(source[i].value)
+      if(source[i]['children']){
+        this.checkNodes(source[i]['children'])
+      }
+    }
+  }
+  updateShowCheckbox(source){
+    for(var i in source){
+      if(source[i].array !== 0){
+        source[i].showCheckbox = true
+        if(source[i]['children']){
+          this.updateShowCheckbox(source[i]['children'])
+        }
+      }
+    }
+  }
+  onArrayIndexAdd(){
+    var indexStr = this.state.arrayIndex.toString()
+    var child = {
+          value: this.selectedNode.value + '/' +  indexStr,
+          label: indexStr,
+    }
+    if(this.selectedNode.array==0){
+      if(this.selectedNode['children']){
+        child['children'] = JSON.parse(JSON.stringify(
+              this.selectedNode['children']).replace(
+                new RegExp(this.selectedNode.value +'/',"g"),
+                this.selectedNode.value + '/' +  indexStr  + '/'
+              )
+            )
+      }    
+      this.selectedNode['children'] = [child]
+    }else{
+      //check already have
+      for(var i in this.selectedNode['children']){
+        if(this.selectedNode['children'][i].label===indexStr){
+          this.setState({
+            arrayIndexInputOpen: false
+          });
+          return
+        }
+      }
+      if(this.selectedNode['children'][0]['children']){
+        child['children'] = JSON.parse(JSON.stringify(
+                this.selectedNode['children'][0]['children']).replace(
+                  new RegExp(this.selectedNode['children'][0].value + '/',"g"),
+                  this.selectedNode.value + '/' +  indexStr + '/'
+                )
+              )
+      }
+      this.selectedNode.children.push(child)
+    }
+    this.selectedNode.array += 1
+    this.state.expanded.push(this.selectedNode.value)
+    this.checkNodes([child])
+    this.updateShowCheckbox([child])
+
+    // todo 
+    // I don't know why but need to substitute [] to nodes to rerender child.
+    // other wise children will not shown.
+    // in the onClose function, substitute temp_nodes to nodes back.
+    this.copyNodes = Array.from(this.state.nodes)
+    this.setState({
+      nodes: [], //this.state.nodes,
+      arrayIndexInputOpen: false  //don't know why this necessary
+    });
+  }
+  onArrayIndexPopupClose(){
+    // console.log('onArrayIndexPopupClose', this.copyNodes, this.state.checked)
+    this.setState({
+      nodes: this.copyNodes,
+      arrayIndexInputOpen: false
+    });
+  }
+  onExpand(expanded, targetNode){
+    this.setState({expanded})
   }
   render() {
+    // console.log('rendered---------------------------')
     return (
       <div className='popup'>
-　      <button onClick={this.onClick.bind(this)}>add</button>
+　      <button onClick={this.onAdd.bind(this)}>add</button>
         <CheckboxTree
                 nodes={this.state.nodes}
                 expandIconClass="fa fa-chevron-right"
@@ -131,9 +287,26 @@ class PopupContents extends React.Component {
                 showNodeIcon={false}
                 checked={this.state.checked}
                 expanded={this.state.expanded}
-                onCheck={checked => this.setState({ checked })}
-                onExpand={expanded => this.onExpand(expanded)}
-            />
+                onClick={ (targetNode) => this.onClick(targetNode)}
+                onCheck={ (checked, targetNode) => this.onCheck(checked, targetNode)}
+                onExpand={ (expanded, targetNode) => this.onExpand(expanded, targetNode)}
+        />
+        {/*input for array num*/}
+        <Popup open={this.state.arrayIndexInputOpen}
+                position="right center"
+                closeOnDocumentClick
+                onClose={this.onArrayIndexPopupClose.bind(this)}
+                >
+                <form onSubmit={this.onArrayIndexAdd.bind(this)}>
+                  <label>Array Index:　</label>
+                  <input type="number" 
+                    value={this.state.arrayIndex} 
+                    min='0'
+                    onChange={ (e)=> this.setState({arrayIndex: Math.round(e.target.value)})} 
+                  />
+                  <input type="submit" value='add' />
+                </form>
+        </Popup>
       </div>
     );
   }
@@ -154,15 +327,17 @@ class App extends Component {
       //state for remove line
       selectedLine: null,
 
-      modalIsOpen: false
+      modalIsOpen: false,
+
+      topicList: {'topics': [], 'types': []},
+      msgList: {},
+
+      lineCandidates:[],
+      selectedLines: [],
+      addLinesOpen: false
 
     };
     this.topics = {}
-    this.topicList = {
-      'topics': [],
-      'types': []
-    }
-    this.msgList = {}
     this.chartReference = null;
     this.color_index = 0
 
@@ -210,7 +385,7 @@ class App extends Component {
 
   updateTopicList() {
     this.state.ros.getTopics((topics) => {
-      // console.log("Getting topics...");
+      console.log("Getting topics...");
       // console.log(topics);
 
       //update selection options
@@ -224,24 +399,32 @@ class App extends Component {
       }, this)
 
       topics.types.forEach(function(msg_name) {
-        if (!(msg_name in this.msgList)) {
+        if (!(msg_name in this.state.msgList)) {
           this.getMsgInfo(msg_name)
         }
       }, this)
 
-      this.topicList = topics
+      this.setState({topicList: topics})
+    })
+  }
 
+  addSelectedLines(lines, candidates){
+    // console.log('setSelectedLines', lines)
+    this.setState({
+      lineCandidates: candidates,
+      selectedLines: lines,
+      addLinesOpen: false
     })
   }
 
   getTopicType(topic_name) {
-    var index = this.topicList.topics.indexOf(topic_name)
+    var index = this.state.topicList.topics.indexOf(topic_name)
     if (index < 0) {
       console.warn('topic is not in the topic list')
       this.updateTopicList()
       return
     }
-    return this.topicList.types[index]
+    return this.state.topicList.types[index]
   }
 
   getMsgInfo(msg_name) {
@@ -260,7 +443,7 @@ class App extends Component {
       console.log("Getting msginfo.: ", msg_name);
       result.typedefs.forEach((data) => {
         console.log(data.type, data)
-        this.msgList[data.type] = data
+        this.state.msgList[data.type] = data
       }, this)
     });
   }
@@ -283,7 +466,7 @@ class App extends Component {
     }
     const topic_name = this.state.selectedTopic.label
     const topic_type = this.getTopicType(topic_name)
-    console.log('addSelectedTopic', topic_name, this.msgList[this.getTopicType(topic_name)])
+    console.log('addSelectedTopic', topic_name, this.state.msgList[this.getTopicType(topic_name)])
 
     this.lines = []
     this.addLines(topic_name, topic_type)
@@ -343,7 +526,7 @@ class App extends Component {
 
   }
   addLines(topic_name, topic_type) {
-    const msg = this.msgList[topic_type]
+    const msg = this.state.msgList[topic_type]
     console.log('add Topic', topic_name, topic_type, msg)
     for (var i in msg.fieldtypes) {
       var field_type = msg.fieldtypes[i]
@@ -365,7 +548,7 @@ class App extends Component {
             array: msg.fieldarraylen[i]
           })
 
-        } else if (this.msgList[field_type]) {
+        } else if (this.state.msgList[field_type]) {
           this.addLines(field_name, field_type)
         } else {
           console.log('not in the msgList', field_type)
@@ -553,12 +736,19 @@ class App extends Component {
         />
 
         <Popup trigger={<button>edit</button>} 
+                open={this.state.addLinesOpen}
+                onOpen={()=>this.setState({addLinesOpen:true})}
                 position="right center"
                 modal
                 contentStyle={customStyles}
                 closeOnDocumentClick
                 >
-          <PopupContents topics={this.topicList} msgs={this.msgList} />
+          <PopupContents topics={this.state.topicList} 
+                           msgs={this.state.msgList} 
+                           lineCandidates={this.state.lineCandidates}
+                           selectedLines={this.state.selectedLines}
+                           addSelectedLines={this.addSelectedLines.bind(this)}
+           />
         </Popup>
 
         {/*
@@ -570,7 +760,7 @@ class App extends Component {
           style={customStyles}
           contentLabel="Example Modal"
         >
-          <PopupContents topics={this.topicList} msgs={this.msgList} />
+          <PopupContents topics={this.state.topicList} msgs={this.state.msgList} />
         </Modal>
         */}
 
