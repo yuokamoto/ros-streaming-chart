@@ -3,13 +3,9 @@ import React, {
 } from 'react';
 import Select from 'react-select';
 import Popup from "reactjs-popup";
-// import Modal from 'react-modal';
 import CheckboxTree from 'react-checkbox-tree';
 import 'font-awesome/css/font-awesome.min.css'; 
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
-// import 'react-checkbox-tree/src/less/react-checkbox-tree.less';
-// import 'react-checkbox-tree/src/scss/react-checkbox-tree.scss';
-
 import {
   Line
 } from 'react-chartjs-2';
@@ -74,16 +70,6 @@ class SelectionData {
     this.source = source //dictionary include line information
     this.expanded = expanded
   }
-
-  getNode(value, children_key='children'){
-    getNode(value, this.source, children_key)  
-  }
-  selectChildrenFromSource(children_key='children'){
-    selectChildrenFromSource(this.source, this.selection, children_key)
-  }
-  applyChangesInSource(key, value, children_key='children'){
-    applyChangesInSource(this.source, key, value, children_key='children')
-  }
 }
 class PopupContents extends React.Component {
   constructor(props) {
@@ -96,13 +82,11 @@ class PopupContents extends React.Component {
     this.selectedNode = null
     this.copyNodes = []
     this.addTopics()
-    // console.log('popup constructor', this.props.topics, this.state.data.source)
   }
 
   addTopics() {
     const topics = this.props.topics.topics
     const types = this.props.topics.types
-    // this.state.data.source = this.props.lineCandidates
     for(var i in topics){
       var exist = false
       for(var j in this.state.data.source){
@@ -131,7 +115,6 @@ class PopupContents extends React.Component {
   }
   addExpandTopics(topic_name, topic_type, root_name, showCheckbox = true) {
     const msg = this.props.msgs[topic_type]
-    // console.log('expand Topic', topic_name, topic_type, msg)
     var children = []
     for (var i in msg.fieldtypes) {
       var field_type = msg.fieldtypes[i]
@@ -140,15 +123,12 @@ class PopupContents extends React.Component {
         if (PLOTTABLE_MSGS.includes(field_type)) {
           //single msg
           if (msg.fieldarraylen[i] === -1) {
-            // this.addLine2Chart(field_name, field_type)
-            // this.state.data.source.children.push()
           } else {
             //array msg
             //not add line now since size is unknown until receive first msg.
             field_type += 'MultiArray'
             showCheckbox = false
           }
-          // console.log('reach leaf************')
           children.push({
             value: field_name,
             label: msg.fieldnames[i],
@@ -162,7 +142,6 @@ class PopupContents extends React.Component {
           } else {
             showCheckbox = false
           }
-          // console.log('go one more inside************')
           const result = this.addExpandTopics(field_name, field_type, root_name=root_name, showCheckbox)
           if(result.length>0){
             children.push({
@@ -186,83 +165,19 @@ class PopupContents extends React.Component {
   onAdd(){
     this.props.updateSelectedLines(this.state.data)
   }
-  // getNode(value, source){
-  //   // console.log('getnode', source, value) 
-  //   for(var i in source){
-  //     // console.log('  ', i, source[i].value, value)
-  //     var res = null
-  //     if(source[i].value===value){
-  //       res = source[i]
-  //     }else if(source[i]['children']){
-  //       res = this.getNode(value, source[i].children)
-  //     }
-  //     if(res){
-  //       return res
-  //     }
-  //   }
-  // }
   onClick(targetNode){
-
-    // if(targetNode.checkState===0){
-    //   this.state.data.selection.push(targetNode.value)
-    //   console.log('first', targetNode)
-    // }else{
-    //   for(var i in this.state.data.selection){
-    //     if(this.state.data.selection[i]===targetNode.value){
-    //       this.state.data.selection.splice(i,1)  
-    //       console.log('seconnnnnnn')      
-    //     }
-    //     console.log('secon', targetNode)
-    //   }
-    // }
-    // this.onCheck(this.state.data.selection, targetNode)
-    
     var node = getNode(targetNode.value, this.state.data.source)  
     if(node.array>=0){
       this.selectedNode = node
       this.state.arrayIndex = 0
       this.setState({arrayIndexInputOpen: true });
-      // console.log(node)
     }
   }
   onCheck(checked, targetNode){
     this.state.data.selection = checked
     this.setState({data:this.state.data})
     console.log('check', targetNode, this.state.data.source)
-    // if(targetNode.checkState===0){
-    //   var node = this.getNode(targetNode.value, this.state.data.source)
-    //   if(node.array>=0){
-    //     this.selectedNode = node
-    //     this.state.arrayIndex = 0
-    //     this.setState({arrayIndexInputOpen: true });
-    //     // console.log(node)
-    //   }else{
-    //     this.setState({checked})
-    //   }
-    // }else{
-    //   this.setState({checked})
-    // }
   }
-  // checkNodes(source){
-  //   // console.log('checknodes', this.state.data.selection, source)
-  //   for(var i in source){
-  //     // console.log(i, source[i])
-  //     this.state.data.selection.push(source[i].value)
-  //     if(source[i]['children']){
-  //       this.checkNodes(source[i]['children'])
-  //     }
-  //   }
-  // }
-  // updateShowCheckbox(source){
-  //   for(var i in source){
-  //     if(source[i].array !== 0){
-  //       source[i].showCheckbox = true
-  //       if(source[i]['children']){
-  //         this.updateShowCheckbox(source[i]['children'])
-  //       }
-  //     }
-  //   }
-  // }
   onArrayIndexAdd(){
     var indexStr = this.state.arrayIndex.toString()
     var child = {
@@ -318,7 +233,6 @@ class PopupContents extends React.Component {
     });
   }
   onArrayIndexPopupClose(){
-    // console.log('onArrayIndexPopupClose', this.copyNodes, this.state.data.selection)
     this.state.data.source = this.copyNodes
     this.setState({
       data: this.state.data,
@@ -330,7 +244,6 @@ class PopupContents extends React.Component {
     this.setState({data:this.state.data})
   }
   render() {
-    // console.log('rendered---------------------------')
     return (
       <div className='popup'>
 　      <button onClick={this.onAdd.bind(this)}>add</button>
@@ -368,7 +281,6 @@ class PopupContents extends React.Component {
 }
 class App extends Component {
   constructor(props) {
-    // console.warn('constructor')
     super(props);
 
     this.state = {
@@ -424,9 +336,6 @@ class App extends Component {
         // this.addLine('test', 'test')
       },
       1000);
-
-    // this.add_topic('/joint_states');
-
   }
 
   updateRosConnection() {
@@ -440,7 +349,6 @@ class App extends Component {
   updateTopicList() {
     this.state.ros.getTopics((topics) => {
       console.log("Getting topics...");
-      // console.log(topics);
 
       //update selection options
       this.setState({
@@ -495,7 +403,7 @@ class App extends Component {
           for (var j in fieldnames) {
             data = data[fieldnames[j]]
           }
-          // console.log(data)
+
           // todo add error handling
           // remove from line if data is array
           if(Array.isArray(data)){
@@ -505,7 +413,6 @@ class App extends Component {
           if(!IsNumeric(data)){
             return
           }
-          // console.log(data, Date.now())
 
           this.chartReference.chartInstance.data.datasets.forEach(function(dataset) {
             if (dataset['label'] === lines[i]) {
@@ -561,115 +468,6 @@ class App extends Component {
     });
   }
 
-  // topicSelect(selected_option) {
-  //   this.setState({
-  //     selectedTopic: selected_option
-  //   })
-  // }
-
-  // lineSelect(selected_option) {
-  //   this.setState({
-  //     selectedLine: selected_option
-  //   })
-  // }
-
-  // addSelectedTopic() {
-  //   if (!this.state.selectedTopic) {
-  //     return
-  //   }
-  //   const topic_name = this.state.selectedTopic.label
-  //   const topic_type = this.getTopicType(topic_name)
-  //   console.log('addSelectedTopic', topic_name, this.state.msgList[this.getTopicType(topic_name)])
-
-  //   this.lines = []
-  //   this.addLines(topic_name, topic_type)
-  //   this.topics[topic_name] = {
-  //     'topic': new ROSLIB.Topic({
-  //       ros: this.state.ros,
-  //       name: topic_name,
-  //       messageType: topic_type
-  //     }),
-  //     'lines': this.lines
-  //   }
-  //   this.topics[topic_name].topic.subscribe(message => {
-  //     // console.log('Received message on : ', message);
-
-  //     var time = message.header.stamp.secs + message.header.stamp.nsecs / 1e9
-  //     var lines = this.topics[topic_name].lines
-  //     for (var i in lines) {
-  //       //parse data
-  //       const fieldname = lines[i].name.substr(topic_name.length + 1, lines[i].name.length) //remove topic_name
-  //       const fieldnames = fieldname.split('/')
-  //       var data = message
-  //       for (var j in fieldnames) {
-  //         data = data[fieldnames[j]]
-  //       }
-  //       // console.log(data, Date.now())
-
-  //       //array data
-  //       if (lines[i].array > -1 && data.length > 0) { //todo dynamic change of data length
-  //         for (j; j < data.length; j++) {
-  //           const line_name = lines[i].name + '/' + j.toString()
-  //           const line_type = lines[i].type
-  //           this.addLine2Chart(line_name, line_type)
-  //           lines.push({ //add lines for array component
-  //             name: line_name,
-  //             type: line_type,
-  //             array: -1
-  //           })
-  //         }
-  //         lines.splice(i, 1) //limove lines of source array
-  //       } else {
-  //         this.chartReference.chartInstance.data.datasets.forEach(function(dataset) {
-  //           if (dataset['label'] === lines[i].name) {
-  //             dataset.data.push({
-  //               t: Date.now(), //message.header.stamp.secs// + message.header.stamp.nsecs*10e9,//
-  //               y: data
-  //             });
-  //             this.chartReference.chartInstance.update({
-  //               preservation: true
-  //             });
-  //             return
-  //           }
-  //         }, this);
-  //         // this.chartReference.chartInstance.update()
-  //       }
-  //     }
-  //   });
-
-  // }
-  // addLines(topic_name, topic_type) {
-  //   const msg = this.state.msgList[topic_type]
-  //   console.log('add Topic', topic_name, topic_type, msg)
-  //   for (var i in msg.fieldtypes) {
-  //     var field_type = msg.fieldtypes[i]
-  //     const field_name = topic_name + '/' + msg.fieldnames[i]
-  //     if (msg.fieldnames[i] !== 'header') {
-
-  //       if (PLOTTABLE_MSGS.includes(field_type)) {
-  //         //single msg
-  //         if (msg.fieldarraylen[i] === -1) {
-  //           this.addLine2Chart(field_name, field_type)
-  //         } else {
-  //           //array msg
-  //           //not add line now since size is unknown until receive first msg.
-  //           field_type += 'MultiArray'
-  //         }
-  //         this.lines.push({
-  //           name: field_name,
-  //           type: field_type,
-  //           array: msg.fieldarraylen[i]
-  //         })
-
-  //       } else if (this.state.msgList[field_type]) {
-  //         this.addLines(field_name, field_type)
-  //       } else {
-  //         console.log('not in the msgList', field_type)
-  //       }
-
-  //     }
-  //   }
-  // }
   addLine(line_name, topic_name, topic_type){
     console.log(this.topics, topic_name, topic_name in this.topics)
     if(!(topic_name in this.topics) ){
@@ -692,10 +490,7 @@ class App extends Component {
     this.addLine2Chart(line_name)
   }
   addLine2Chart(line_name) {
-    // console.log(this.chartReference)
     console.log('addLine', line_name)
-    // console.log(this.chartReference.props.data.datasets)
-    // this.chartReference.props.data.datasets.push({
     this.chartReference.chartInstance.data.datasets.push({
       label: line_name,
       borderColor: CHART_COLORS[CHART_COLORS.length % this.color_index],
@@ -716,7 +511,6 @@ class App extends Component {
     var datasets = this.chartReference.chartInstance.data.datasets
     for (var i = 0; i < datasets.length; i++) {
       if (datasets[i]['label'] === line_name) {
-        // console.log('remove inside', datasets[i]['label'])
         datasets.splice(i, 1)
         break
       }
@@ -730,7 +524,6 @@ class App extends Component {
 
     //remove from lines in topic
     for (var topic_name in this.topics) {
-      // console.log(topic_name, this.topics)    
       for (i = 0; i < this.topics[topic_name].lines.length; i++) {
         if (this.topics[topic_name].lines[i] === line_name) {
           this.topics[topic_name].lines.splice(i, 1)
@@ -740,7 +533,6 @@ class App extends Component {
     }
 
     this.chartReference.chartInstance.update()
-    // console.log( this.chartReference.chartInstance)
   }
 
   rosbridgeUrlChange(event) {
@@ -749,18 +541,7 @@ class App extends Component {
     });
   }
 
-  // openModal() {
-  //   this.setState({modalIsOpen: true});
-  // }
-  // afterOpenModal() {
-  //   this.subtitle.style.color = '#f00';
-  // }
-  // closeModal() {
-  //   this.setState({modalIsOpen: false});
-  // }
-
   render() {
-    // const onRefresh = (chart) => {this.refresh(chart)};
     const data = {
       labels: [],
       datasets: []
@@ -817,7 +598,16 @@ class App extends Component {
         rangeMax: {
           x: null // Max value of the duration option
         }
-      }
+      },
+      // layout: {
+      //     padding: {
+      //         left: 50,
+      //         right: 50,
+      //         top: 50,
+      //         bottom: 50
+      //     }
+      // }
+      maintainAspectRatio: false,
     };
     
     const customStyles = {
@@ -827,7 +617,7 @@ class App extends Component {
     };
   
     return ( 
-      <div>
+      <div class="chart-container">
         <div>
           <label> rosbridgeURL: </label> 
           <input type = "text" value = { this.state.rosbridgeUrl }
@@ -840,30 +630,9 @@ class App extends Component {
           </button> 
         </div>
 
-        {/*
-        <div className='lineEdit'>
-          <Select value = { this.state.selectedTopic }
-            onChange = { this.topicSelect.bind(this) }
-            options = { this.state.selectOptions }
-            className='lineEditSelect'
-          /> 
-          <button className='lineEditBtn' onClick = { this.addSelectedTopic.bind(this) } >
-            add 
-          </button> 
-          <br/>
-          <Select value = { this.state.selectedLine }
-            onChange = { this.lineSelect.bind(this) }
-            options = { this.chartReference ? this.chartReference.chartInstance.data.datasets : []}
-            className='lineEditSelect'
-          /> 
-          <button className='lineEditBtn' onClick = { this.removeSelectedLine.bind(this) }> 
-            remove 
-          </button> 
-          <br/>
-        </div>
-      */}
-
         <Line ref = { (reference) => this.chartReference = reference }
+          // width={1}
+          // height={400}
           data = { this.chartReference ? this.chartReference.chartInstance.data : data }
           options = { this.chartReference ? this.chartReference.chartInstance.options : options }
         />
@@ -882,19 +651,6 @@ class App extends Component {
                            updateSelectedLines={this.updateSelectedLines.bind(this)}
            />
         </Popup>
-
-        {/*
-        <button onClick={this.openModal}>Open Modal!!</button>
-        <Modal
-          // isOpen={this.state.modalIsOpen}
-          // onAfterOpen={this.afterOpenModal}
-          // onRequestClose={this.closeModal}
-          style={customStyles}
-          contentLabel="Example Modal"
-        >
-          <PopupContents topics={this.state.topicList} msgs={this.state.msgList} />
-        </Modal>
-        */}
 
       </div>
     );
