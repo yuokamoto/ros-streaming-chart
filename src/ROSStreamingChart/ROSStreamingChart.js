@@ -50,6 +50,7 @@ class ROSStreamingChart extends Component {
       editLinesOpen: false,
 
       //chart params
+      paused: false,
       frameRate: 5,
       useMsgTimeStamp: false
     };
@@ -61,6 +62,7 @@ class ROSStreamingChart extends Component {
     this.updateSelectedLines = this.updateSelectedLines.bind(this)
     this.changeFrameRate = this.changeFrameRate.bind(this)
     this.changeUseMsgTimeStamp = this.changeUseMsgTimeStamp.bind(this)
+    this.pause = this.pause.bind(this)
   }
   updateSelectedLines(data){
     console.log(this.state.msgList, this.state.topicList)
@@ -215,10 +217,17 @@ class ROSStreamingChart extends Component {
     this.chartReference.chartInstance.update()
   }
   changeUseMsgTimeStamp(e) {
-    console.log(e.target.value)
+    // console.log(e.target.value)
     this.setState({
       useMsgTimeStamp:e.target.value
     })
+  }
+  pause(){
+    this.chartReference.chartInstance.options.plugins.streaming.pause = !this.state.paused
+    this.setState({
+      paused: !this.state.paused
+    })
+    this.chartReference.chartInstance.update()
   }
   render() {
     const data = {
@@ -315,6 +324,9 @@ class ROSStreamingChart extends Component {
           options = { this.chartReference ? this.chartReference.chartInstance.options : options }
         />
 
+        <button className={ this.state.paused ? "fa fa-play" : "fa fa-pause" } 
+        onClick={this.pause}/>&nbsp;&nbsp;
+
         <Popup trigger={<button>edit</button>} 
                 open={this.state.editLinesOpen}
                 onOpen={()=>this.setState({editLinesOpen:true})}
@@ -343,8 +355,7 @@ class ROSStreamingChart extends Component {
             value={this.state.useMsgTimeStamp} 
             onChange={this.changeUseMsgTimeStamp} 
         />
-        <label>use msg time stamp:</label>
-
+        <label>use msg time stamp</label>
       </div>
     );
   }

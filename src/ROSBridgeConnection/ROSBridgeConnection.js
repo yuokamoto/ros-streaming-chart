@@ -33,7 +33,7 @@ class ROSBridgeConnection extends Component {
       this.updateTopicList()
     });
 
-    this.state.ros.on('error', function(error) {
+    this.state.ros.on('error', (error) => {
       console.log('Error connecting to websocket server: ', error);
       this.setRosInstance()
     });

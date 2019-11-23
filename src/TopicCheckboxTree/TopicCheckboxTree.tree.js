@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ROSStreamingChart from './ROSStreamingChart';
+import TopicCheckboxTree from './TopicCheckboxTree';
 
 it('renders without crashing', () => {
   const div = document.createElement('div');
-  ReactDOM.render(<ROSStreamingChart />, div);
+  ReactDOM.render(<TopicCheckboxTree />, div);
   ReactDOM.unmountComponentAtNode(div);
 });
