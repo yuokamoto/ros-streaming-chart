@@ -52,7 +52,7 @@ class SelectionData {
     this.expanded = expanded
   }
 }
-class TopicCheckboxTree extends React.Component {
+class TopicCheckboxTree extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -130,7 +130,7 @@ class TopicCheckboxTree extends React.Component {
           } else {
             showCheckbox = false
           }
-          const result = this.addExpandTopics(field_name, field_type, root_name=root_name, showCheckbox)
+          const result = this.addExpandTopics(field_name, field_type, root_name, showCheckbox)
           if(result.length>0){
             children.push({
               value: field_name,
@@ -157,13 +157,18 @@ class TopicCheckboxTree extends React.Component {
     var node = getNode(targetNode.value, this.state.data.source)  
     if(node.array>=0){
       this.selectedNode = node
-      this.state.arrayIndex = 0
-      this.setState({arrayIndexInputOpen: true });
+      this.setState({
+        arrayIndex: 0,
+        arrayIndexInputOpen: true 
+      });
     }
   }
   onCheck(checked, targetNode){
-    this.state.data.selection = checked
-    this.setState({data:this.state.data})
+    var temp = this.state.data
+    temp.selection = checked
+    this.setState({
+      data: temp
+    })
     console.log('check', targetNode, this.state.data.source)
   }
   onArrayIndexAdd(){
@@ -173,7 +178,7 @@ class TopicCheckboxTree extends React.Component {
           label: indexStr,
           root: this.selectedNode.root
     }
-    if(this.selectedNode.array==0){
+    if(this.selectedNode.array===0){
       //if this node is not leaf, copy the all children as well.
       if(this.selectedNode['children']){
         child['children'] = JSON.parse(JSON.stringify(
@@ -205,31 +210,34 @@ class TopicCheckboxTree extends React.Component {
       this.selectedNode.children.push(child)
     }
     this.selectedNode.array += 1
-    this.state.data.expanded.push(this.selectedNode.value)
-    selectChildrenFromSource([child], this.state.data.selection)
+    var temp = this.state.data
+    temp.expanded.push(this.selectedNode.value)
+    selectChildrenFromSource([child], temp.selection)
     applyChangesInSource([child], 'showCheckbox', true)
 
     // todo 
     // I don't know why but need to substitute [] to nodes to rerender child.
     // other wise children will not shown.
     // in the onClose function, substitute temp_nodes to nodes back.
-    this.copyNodes = Array.from(this.state.data.source)
-    this.state.data.source = []
+    this.copyNodes = Array.from(temp.source)
+    temp.source = []
     this.setState({
-      data: this.state.data,
+      data: temp,
       arrayIndexInputOpen: false  //don't know why this necessary
     });
   }
   onArrayIndexPopupClose(){
-    this.state.data.source = this.copyNodes
+   var temp = this.state.data
+   temp.source = this.copyNodes
     this.setState({
-      data: this.state.data,
+      data: temp,
       arrayIndexInputOpen: false
     });
   }
   onExpand(expanded, targetNode){
-    this.state.data.expanded = expanded
-    this.setState({data:this.state.data})
+    var temp = this.state.data
+    temp.expanded = expanded
+    this.setState({data: temp})
   }
   render() {
     return (

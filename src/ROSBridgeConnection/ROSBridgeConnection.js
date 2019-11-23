@@ -16,11 +16,6 @@ class ROSBridgeConnection extends Component {
       msgList: {},
     };
 
-    this.rosbridgeUrlChange = this.rosbridgeUrlChange.bind(this)
-    this.updateRosConnection = this.updateRosConnection.bind(this)
-    this.updateTopicList = this.updateTopicList.bind(this)
-  }
-  componentDidMount() {
     this.state.ros = new ROSLIB.Ros({
       url: this.state.rosbridgeUrl
     })
@@ -47,11 +42,15 @@ class ROSBridgeConnection extends Component {
     });
 
     setInterval(() => {
-        //todo 
-        // add change image
-      },
-      1000);    
-  } 
+      //todo 
+      // add change image
+    },
+    1000);    
+
+    this.rosbridgeUrlChange = this.rosbridgeUrlChange.bind(this)
+    this.updateRosConnection = this.updateRosConnection.bind(this)
+    this.updateTopicList = this.updateTopicList.bind(this)
+  }
   setRosInstance(){
     if(this.props.getRosInstance){
       this.props.getRosInstance(this.state.ros, this.state.msgList, this.state.topicList)
@@ -106,10 +105,18 @@ class ROSBridgeConnection extends Component {
 
     msgDetailesClient.callService(request, (result) => {
       console.log("Getting msginfo... ", msg_name);
+
+      var temp = this.state.msgList
       result.typedefs.forEach((data) => {
-        console.log(data.type, data)
-        this.state.msgList[data.type] = data
+        // console.log(data.type, data)
+        // this.state.msgList[data.type] = data
+        temp[data.type] = data
       }, this)
+
+      this.setState({
+        msgList: temp
+      })
+
     });
   }
 

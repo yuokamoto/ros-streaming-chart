@@ -16,8 +16,8 @@ import {
   SelectionData,
   TopicCheckboxTree,
   getNode,
-  selectChildrenFromSource,
-  applyChangesInSource
+  // selectChildrenFromSource,
+  // applyChangesInSource
 } from '../TopicCheckboxTree/TopicCheckboxTree';
 
 const ROSLIB = require("roslib");
@@ -84,7 +84,7 @@ class ROSStreamingChart extends Component {
       }
     }
     // register callback
-    for(var topic_name in this.topics){
+    for(let topic_name in this.topics){
       this.topics[topic_name].topic.subscribe(message => {
         // console.log('Received message on : ', message, topic_name);
 
@@ -95,11 +95,11 @@ class ROSStreamingChart extends Component {
         // console.log('msg time', time, Date.now())
 
         var lines = this.topics[topic_name].lines
-        for (var i in lines) {
+        for (let i in lines) {
           //parse data
           const fieldname = lines[i].substr(topic_name.length + 1, lines[i].length) //remove topic_name
           const fieldnames = fieldname.split('/')
-          var data = message
+          let data = message
           for (var j in fieldnames) {
             data = data[fieldnames[j]]
           }
@@ -250,12 +250,9 @@ class ROSStreamingChart extends Component {
             // }
           },
           ticks: {
-              // Include a dollar sign in the ticks
-              // callback: function(value, index, values) {
-                  // console.log(value, values[index].value, 
-                  //   values[index].label, values[index])
-                  // return '$' + value;
-              // }
+              callback: function(value, index, values) {
+                  return value;
+              }
           } 
         }]
       },
