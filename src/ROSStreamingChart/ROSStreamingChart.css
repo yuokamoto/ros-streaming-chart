@@ -1,12 +1,12 @@
-.App {
+.ROSStreamingChart {
   text-align: center;
 }
 
-.App-logo {
+.ROSStreamingChart-logo {
   height: 40vmin;
 }
 
-.App-header {
+.ROSStreamingChart-header {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
@@ -17,16 +17,9 @@
   color: white;
 }
 
-.App-link {
+.ROSStreamingChart-link {
   color: #09d3ac;
 }
-
-/*.lineEdit li{
-  width: 100%;
-  float: left; 
-  list-style: none;
-  margin: 5px;
-}*/
 .lineEditSelect {
   display: inline-block;
   width: 80%;
@@ -36,4 +29,10 @@
   display: inline-block;
   width: 20%;
   height:40px;
+}
+.chart-container {
+  position: relative;
+  margin: auto;
+  height: 80vh;
+  width: 80vw;
 }
