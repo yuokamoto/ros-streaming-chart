@@ -1,0 +1,59 @@
+.ROSStreamingChart {
+  text-align: center;
+}
+
+.ROSStreamingChart-logo {
+  height: 40vmin;
+}
+
+.ROSStreamingChart-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.ROSStreamingChart-link {
+  color: #09d3ac;
+}
+
+/*.lineEdit li{
+  width: 100%;
+  float: left; 
+  list-style: none;
+  margin: 5px;
+}*/
+.lineEditSelect {
+  display: inline-block;
+  width: 80%;
+  height: 100%;
+}
+.lineEditBtn {
+  display: inline-block;
+  width: 20%;
+  height:40px;
+}
+
+.popup {
+  /*width: 100px;*/
+  /*overflow:'scroll';*/
+}
+
+/*.popup-content {
+  width: 300px;
+}*/
+
+.react-checkbox-tree {
+  overflow: scroll;
+}
+
+.chart-container {
+  position: relative;
+  margin: auto;
+  height: 80vh;
+  width: 80vw;
+}

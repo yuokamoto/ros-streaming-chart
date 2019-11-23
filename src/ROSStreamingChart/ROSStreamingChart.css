@@ -1,12 +1,12 @@
-.App {
+.ROSStreamingChart {
   text-align: center;
 }
 
-.App-logo {
+.ROSStreamingChart-logo {
   height: 40vmin;
 }
 
-.App-header {
+.ROSStreamingChart-header {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
@@ -17,7 +17,7 @@
   color: white;
 }
 
-.App-link {
+.ROSStreamingChart-link {
   color: #09d3ac;
 }
 
