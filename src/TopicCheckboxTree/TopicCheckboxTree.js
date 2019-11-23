@@ -3,6 +3,7 @@ import React, {
 } from 'react';
 import Popup from "reactjs-popup";
 import CheckboxTree from 'react-checkbox-tree';
+import './TopicCheckboxTree.css';
 import 'font-awesome/css/font-awesome.min.css'; 
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 
@@ -62,6 +63,10 @@ class TopicCheckboxTree extends React.Component {
     this.selectedNode = null
     this.copyNodes = []
     this.addTopics()
+
+    this.onSubmit = this.onSubmit.bind(this)
+    this.onArrayIndexPopupClose = this.onArrayIndexPopupClose.bind(this)
+    this.onArrayIndexAdd = this.onArrayIndexAdd.bind(this)
   }
 
   addTopics() {
@@ -80,7 +85,7 @@ class TopicCheckboxTree extends React.Component {
         // add only new topics
         console.log('newly added topic: ' +  topics[i])
         const children = this.addExpandTopics(topics[i], types[i], topics[i])
-        if(children.length>0){
+        if(children && children.length>0){
             this.state.data.source.push({
                 value: topics[i],
                 label: topics[i],
@@ -95,6 +100,9 @@ class TopicCheckboxTree extends React.Component {
   }
   addExpandTopics(topic_name, topic_type, root_name, showCheckbox = true) {
     const msg = this.props.msgs[topic_type]
+    if(!msg){
+      return
+    }
     var children = []
     for (var i in msg.fieldtypes) {
       var field_type = msg.fieldtypes[i]
@@ -226,7 +234,7 @@ class TopicCheckboxTree extends React.Component {
   render() {
     return (
       <div className='popup'>
-　      <button onClick={this.onSubmit.bind(this)}>submit</button>
+　      <button onClick={this.onSubmit}>submit</button>
         <CheckboxTree
                 nodes={this.state.data.source}
                 expandIconClass="fa fa-chevron-right"
@@ -243,9 +251,9 @@ class TopicCheckboxTree extends React.Component {
         <Popup open={this.state.arrayIndexInputOpen}
                 position="right center"
                 closeOnDocumentClick
-                onClose={this.onArrayIndexPopupClose.bind(this)}
+                onClose={this.onArrayIndexPopupClose}
                 >
-                <form onSubmit={this.onArrayIndexAdd.bind(this)}>
+                <form onSubmit={this.onArrayIndexAdd}>
                   <label>Array Index:　</label>
                   <input type="number" 
                     value={this.state.arrayIndex} 

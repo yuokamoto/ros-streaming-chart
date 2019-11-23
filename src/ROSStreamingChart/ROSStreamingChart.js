@@ -47,14 +47,23 @@ class ROSStreamingChart extends Component {
       msgList: {},
 
       data: new SelectionData([], [], []),
-      editLinesOpen: false
+      editLinesOpen: false,
 
+      //chart params
+      frameRate: 5,
+      useMsgTimeStamp: false
     };
     this.topics = {}
     this.chartReference = null;
     this.color_index = 0
+
+    this.getRosInstance = this.getRosInstance.bind(this)
+    this.updateSelectedLines = this.updateSelectedLines.bind(this)
+    this.changeFrameRate = this.changeFrameRate.bind(this)
+    this.changeUseMsgTimeStamp = this.changeUseMsgTimeStamp.bind(this)
   }
   updateSelectedLines(data){
+    console.log(this.state.msgList, this.state.topicList)
     // remove not selected lines
     const labels = Array.from(this.chartReference.chartInstance.data.labels)
     console.log('update: remove', labels, data.selection)
@@ -78,9 +87,9 @@ class ROSStreamingChart extends Component {
         // console.log('Received message on : ', message, topic_name);
 
         var time = Date.now()
-        // if(message['header']['stamp']){
-        //   time = Math.round(message.header.stamp.secs * 1000 + message.header.stamp.nsecs / 1e6)
-        // }
+        if(this.state.useMsgTimeStamp && message['header']['stamp']){
+          time = Math.round(message.header.stamp.secs * 1000 + message.header.stamp.nsecs / 1e6)
+        }
         // console.log('msg time', time, Date.now())
 
         var lines = this.topics[topic_name].lines
@@ -126,7 +135,7 @@ class ROSStreamingChart extends Component {
     })
   }
   addLine(line_name, topic_name, topic_type){
-    console.log(this.topics, topic_name, topic_name in this.topics)
+    // console.log(this.topics, topic_name, topic_name in this.topics)
     if(!(topic_name in this.topics) ){
       this.topics[topic_name] = {
         'topic': new ROSLIB.Topic({
@@ -137,7 +146,7 @@ class ROSStreamingChart extends Component {
         'lines': [line_name]
       }
     }else{
-      console.log(line_name, this.topics[topic_name].lines, this.topics[topic_name].lines.includes(topic_name))
+      // console.log(line_name, this.topics[topic_name].lines, this.topics[topic_name].lines.includes(topic_name))
       if(!(this.topics[topic_name].lines.includes(line_name))){
         this.topics[topic_name].lines.push(line_name)
       }else{
@@ -147,7 +156,7 @@ class ROSStreamingChart extends Component {
     this.addLine2Chart(line_name)
   }
   addLine2Chart(line_name) {
-    console.log('addLine', line_name)
+    // console.log('addLine', line_name)
     this.chartReference.chartInstance.data.datasets.push({
       label: line_name,
       borderColor: CHART_COLORS[CHART_COLORS.length % this.color_index],
@@ -191,14 +200,26 @@ class ROSStreamingChart extends Component {
     this.chartReference.chartInstance.update()
   }
   getRosInstance(ros, msgList, topicList) {
-    // console.log('getRosInstance', ros, msgList, topicList)
+    console.log('getRosInstance', ros, msgList, topicList)
     this.setState({
       ros: ros,
       msgList: msgList,
       topicList: topicList,
     })
   }
-  
+  changeFrameRate(e) {
+    this.chartReference.chartInstance.options.plugins.streaming.frameRate = e.target.value
+    this.setState({
+      frameRate:e.target.value
+    })
+    this.chartReference.chartInstance.update()
+  }
+  changeUseMsgTimeStamp(e) {
+    console.log(e.target.value)
+    this.setState({
+      useMsgTimeStamp:e.target.value
+    })
+  }
   render() {
     const data = {
       labels: [],
@@ -219,14 +240,14 @@ class ROSStreamingChart extends Component {
             //   // minute: 'h:mm a'
             // }
           },
-          // ticks: {
-          //     // Include a dollar sign in the ticks
-          //     callback: function(value, index, values) {
-          //         // console.log(value, values[index].value, 
-          //         //   values[index].label, values[index])
-          //         return '$' + value;
-          //     }
-          // } 
+          ticks: {
+              // Include a dollar sign in the ticks
+              // callback: function(value, index, values) {
+                  // console.log(value, values[index].value, 
+                  //   values[index].label, values[index])
+                  // return '$' + value;
+              // }
+          } 
         }]
       },
       tooltips: {
@@ -244,7 +265,7 @@ class ROSStreamingChart extends Component {
       responsiveAnimationDuration: 0, // animation duration after a resize
       plugins: {
         streaming: {
-          frameRate: 1 // chart is drawn 5 times every second
+          frameRate: 5 // chart is drawn 5 times every second
         }
       },
       pan: {
@@ -276,8 +297,7 @@ class ROSStreamingChart extends Component {
       //     }
       // }
       maintainAspectRatio: false,
-    };
-    
+    };   
     const customStyles = {
       width: '90%',
       height: '90%',
@@ -285,14 +305,16 @@ class ROSStreamingChart extends Component {
     };
   
     return ( 
-      <div class="chart-container">
+      <div className="chart-container">
         <ROSBridgeConnection
-          getRosInstance = {this.getRosInstance.bind(this)}
+          getRosInstance = {this.getRosInstance}
         />
+
         <Line ref = { (reference) => this.chartReference = reference }
           data = { this.chartReference ? this.chartReference.chartInstance.data : data }
           options = { this.chartReference ? this.chartReference.chartInstance.options : options }
         />
+
         <Popup trigger={<button>edit</button>} 
                 open={this.state.editLinesOpen}
                 onOpen={()=>this.setState({editLinesOpen:true})}
@@ -304,9 +326,25 @@ class ROSStreamingChart extends Component {
           <TopicCheckboxTree topics={this.state.topicList} 
                            msgs={this.state.msgList} 
                            data={this.state.data}
-                           onSubmit={this.updateSelectedLines.bind(this)}
+                           onSubmit={this.updateSelectedLines}
            />
-        </Popup>
+        </Popup>&nbsp;&nbsp;
+
+        <label>frame rate:</label>
+        <input type="number" 
+          value={this.state.frameRate} 
+          min='1'
+          style={{width:'3em'}}
+          onChange={this.changeFrameRate} 
+        />
+        <label>hz</label>&nbsp;&nbsp;
+
+        <input type="checkbox" 
+            value={this.state.useMsgTimeStamp} 
+            onChange={this.changeUseMsgTimeStamp} 
+        />
+        <label>use msg time stamp:</label>
+
       </div>
     );
   }
