@@ -41,7 +41,6 @@ class ROSStreamingChart extends Component {
 
     this.state = {
       ros: null,
-      rosbridgeUrl: 'ws://localhost:9090',
 
       topicList: {'topics': [], 'types': []},
       msgList: {},
@@ -256,7 +255,10 @@ class ROSStreamingChart extends Component {
               callback: function(value, index, values) {
                 // console.log(value)
                   return value;
-              }
+              },
+              maxRotation: 0,
+              minRotation: 0,
+              sampleSize: 5,
           } 
         }]
       },
@@ -276,6 +278,11 @@ class ROSStreamingChart extends Component {
       plugins: {
         streaming: {
           frameRate: this.state.frameRate
+        }
+      },
+      elements: {
+        line: {
+          tension: 0 // disables bezier curves
         }
       },
       pan: {

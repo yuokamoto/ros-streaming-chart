@@ -131,7 +131,7 @@ class ROSBridgeConnection extends Component {
     return ( 
         <div>
           <label> rosbridgeURL: </label> 
-          <input type = "text" value = { this.state.rosbridgeUrl }
+          <input type = "text" style={{width:'20em'}} value = { this.state.rosbridgeUrl }
             onChange = { this.rosbridgeUrlChange } /> 
           <button onClick = { this.updateRosConnection }> 
             { (this.state.ros && this.state.ros.isConnected) ? 'Disconnect' : 'Connect'} 
