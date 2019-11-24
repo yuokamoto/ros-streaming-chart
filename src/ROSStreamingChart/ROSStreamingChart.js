@@ -51,7 +51,7 @@ class ROSStreamingChart extends Component {
 
       //chart params
       paused: false,
-      frameRate: 5,
+      frameRate: 1,
       useMsgTimeStamp: false
     };
     this.topics = {}
@@ -87,7 +87,9 @@ class ROSStreamingChart extends Component {
     for(let topic_name in this.topics){
       this.topics[topic_name].topic.subscribe(message => {
         // console.log('Received message on : ', message, topic_name);
-
+        if(this.state.paused){
+          return
+        }
         var time = Date.now()
         if(this.state.useMsgTimeStamp && message['header']['stamp']){
           time = Math.round(message.header.stamp.secs * 1000 + message.header.stamp.nsecs / 1e6)
@@ -120,14 +122,13 @@ class ROSStreamingChart extends Component {
                 t: time, //Date.now(), //message.header.stamp.secs// + message.header.stamp.nsecs*10e9,//
                 y: data
               });
-              this.chartReference.chartInstance.update({
-                preservation: true
-              });
               return
             }
           }, this);
-            this.chartReference.chartInstance.update()
         }
+        this.chartReference.chartInstance.update({
+              preservation: true
+        });
       });
     }
 
@@ -215,6 +216,7 @@ class ROSStreamingChart extends Component {
       frameRate:e.target.value
     })
     this.chartReference.chartInstance.update()
+    // console.log('frame rate update', e.target.value, this.chartReference.chartInstance.options.plugins.streaming.frameRate)
   }
   changeUseMsgTimeStamp(e) {
     // console.log(e.target.value)
@@ -243,6 +245,7 @@ class ROSStreamingChart extends Component {
         xAxes: [{
           type: 'realtime',
           realtime: {
+            parser: 'h:mm:ss'
             // displayFormats: {
             //   second: 'h:mm:ss a',
             //   // millisecond: 'h:mm:ss.SSS a',
@@ -251,6 +254,7 @@ class ROSStreamingChart extends Component {
           },
           ticks: {
               callback: function(value, index, values) {
+                // console.log(value)
                   return value;
               }
           } 
@@ -271,7 +275,7 @@ class ROSStreamingChart extends Component {
       responsiveAnimationDuration: 0, // animation duration after a resize
       plugins: {
         streaming: {
-          frameRate: 5 // chart is drawn 5 times every second
+          frameRate: this.state.frameRate
         }
       },
       pan: {
