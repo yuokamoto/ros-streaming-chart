@@ -90,7 +90,7 @@ class ROSStreamingChart extends Component {
           return
         }
         var time = Date.now()
-        if(this.state.useMsgTimeStamp && message['header']['stamp']){
+        if(this.state.useMsgTimeStamp && message['header'] && message['header']['stamp']){
           time = Math.round(message.header.stamp.secs * 1000 + message.header.stamp.nsecs / 1e6)
         }
         // console.log('msg time', time, Date.now())
