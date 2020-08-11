@@ -9,9 +9,21 @@ class ROSBridgeConnection extends Component {
   constructor(props) {
     super(props);
 
+    // convert non ws or wss scheme to wss
+    // var env_ep = process.env.WS_ROSBRIDGE
+    var env_ep = 'ws://localhost:9090'
+    if(window._env_ && window._env_.WS_ROSBRIDGE){
+      const env_ep_split = window._env_.WS_ROSBRIDGE.split(':')
+      const scheme = env_ep_split[0]
+      if(scheme !== 'wss' || scheme !=='ws' ){
+        env_ep_split[0] = 'wss'
+        env_ep = env_ep_split.join(':')
+      }
+    }
+    
     this.state = {
       ros: null,
-      rosbridgeUrl: 'ws://localhost:9090',
+      rosbridgeUrl: env_ep,
       topicList: {'topics': [], 'types': []},
       msgList: {},
     };
