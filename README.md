@@ -1,4 +1,6 @@
 ## ROS Streaming chart
+![demo](ros-streaming-chart.gif)
+
 Web browser tool to visualize time series data from ROS by using roslibjs and chart.js
 
 ### Run
